@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "server for voicebot",
   "main": "app.js",
-  "scripts": {
-    "test": "echo 'No tests to run'"
-  },
   "repository": {
     "type": "git",
     "url": "Server"
