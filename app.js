@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 2980; // Use the PORT environment variable provided by Azure or default to 3000
+const port = process.env.PORT; // Use the PORT environment variable provided by Azure or default to 3000
 
 // Define routes and middleware here
 
@@ -11,6 +11,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/callback', (req, res) => {
     res.send('Getting called!');
+    logger.info('Getting called!');
 });
 
 
