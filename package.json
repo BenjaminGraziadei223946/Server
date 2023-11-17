@@ -10,6 +10,7 @@
   "author": "Benjamin Graziadei",
   "license": "ISC",
   "dependencies": {
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "botbuilder":"^4.21.1"
   }
 }
