@@ -1,12 +1,24 @@
 const express = require('express');
 const morgan = require('morgan');
 const { BotFrameworkAdapter } = require('botbuilder');
+const { CommunicationIdentityClient } = require('@azure/communication-identity');
+const { Client } = require('@microsoft/microsoft-graph-client');
+
 
 const app = express();
 const port = process.env.PORT;
+
 const adapter = new BotFrameworkAdapter({
   appId: process.env.MicrosoftAppId,
   appPassword: process.env.MicrosoftAppPassword
+});
+
+const acsClient = new CommunicationIdentityClient(process.env.ACS_CONNECTION_STRING);
+
+const graphClient = Client.init({
+  authProvider: (done) => {
+    done(null, process.env.GRAPH_API_TOKEN); // Provide the token
+  }
 });
 
 adapter.onTurnError = async (context, error) => {
@@ -15,34 +27,36 @@ adapter.onTurnError = async (context, error) => {
   await context.sendActivity(`Oops. Something went wrong!`);
 };
 
-// Define routes and middleware here
 app.use(morgan('dev'));
-// Define a basic route for testing
-app.get('/', (req, res) => {
-  res.send('Hello, Azure Web App!');
-});
+app.use(express.json());
 
-app.post('/api/callback', (req, res) => {
+app.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {
-      // Route to main dialog.
-      if (context.activity.type === 'conversationUpdate') {
-        // Handle conversation update logic here
-        // This is where you might detect the start of a call
-        if (context.activity.membersAdded && context.activity.membersAdded.length > 0) {
-            // Iterate over all new members added to the conversation
-            for (const member of context.activity.membersAdded) {
-                if (member.id !== context.activity.recipient.id) {
-                    // Respond to the member (user or bot) who joined the conversation
-                    await context.sendActivity('Welcome to the call!');
-                }
-            }
-        }
-    } else if (context.activity.type === 'message') {
-        // Handle messages sent during the call
-        await context.sendActivity(`You said: ${context.activity.text}`);
+    // Bot logic here
+    if (context.activity.type === 'message') {
+      await context.sendActivity(`You sent: ${context.activity.text}`);
     }
   });
 });
+
+app.post('/api/calls', async (req, res) => {
+  const callId = req.body.callId; // Extract call ID from the request
+  await answerCall(callId);      // Answer the call using Graph API
+  await handleRealTimeMedia(callId); // Manage real-time media with ACS
+  res.status(200).send('Call handled');
+});
+
+async function answerCall(callId) {
+  // Code to answer a call using Graph API
+  const response = await graphClient.api(`/communications/calls/${callId}/answer`).post(/* Answer call payload */);
+  // Handle the response
+}
+
+
+async function handleRealTimeMedia(callId) {
+  // Code to handle real-time media streams
+  // This involves using ACS to manage audio streams, like receiving and sending audio
+}
 
 
 // Start the server
