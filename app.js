@@ -1,6 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
-const { BotFrameworkAdapter } = require('botbuilder');
+const { CloudAdapter, ConfigurationServiceClientCredentialFactory, createBotFrameworkAuthenticationFromConfiguration } = require('botbuilder');
 const { CommunicationIdentityClient } = require('@azure/communication-identity');
 const { Client } = require('@microsoft/microsoft-graph-client');
 
@@ -8,10 +8,14 @@ const { Client } = require('@microsoft/microsoft-graph-client');
 const app = express();
 const port = process.env.PORT;
 
-const adapter = new BotFrameworkAdapter({
-  appId: process.env.MicrosoftAppId,
-  appPassword: process.env.MicrosoftAppPassword
+const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
+  MicrosoftAppId: process.env.MICROSOFT_APP_ID,
+  MicrosoftAppPassword: process.env.MICROSOFT_APP_PASSWORD
 });
+
+const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfiguration(null, credentialsFactory);
+
+const adapter = new CloudAdapter(botFrameworkAuthentication);
 
 //const acsClient = new CommunicationIdentityClient(process.env.ACS_CONNECTION_STRING);
 
