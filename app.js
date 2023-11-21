@@ -13,7 +13,7 @@ const adapter = new BotFrameworkAdapter({
   appPassword: process.env.MicrosoftAppPassword
 });
 
-const acsClient = new CommunicationIdentityClient(process.env.ACS_CONNECTION_STRING);
+//const acsClient = new CommunicationIdentityClient(process.env.ACS_CONNECTION_STRING);
 
 /*const graphClient = Client.init({
   authProvider: (done) => {
