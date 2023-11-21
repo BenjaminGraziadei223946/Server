@@ -31,14 +31,14 @@ adapter.onTurnError = async (context, error) => {
 app.use(morgan('dev'));
 app.use(express.json());
 
-app.post('/api/messages', (req, res) => {
+/*app.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {
     // Bot logic here
     if (context.activity.type === 'message') {
       await context.sendActivity(`You sent: ${context.activity.text}`);
     }
   });
-});
+});*/
 
 app.post('/api/callback', async (req, res) => {
   const callId = req.body.callId; // Extract call ID from the request
