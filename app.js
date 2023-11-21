@@ -30,7 +30,6 @@ adapter.onTurnError = async (context, error) => {
 
 app.use(morgan('dev'));
 app.use(express.json());
-
 /*app.post('/api/messages', (req, res) => {
   adapter.processActivity(req, res, async (context) => {
     // Bot logic here
