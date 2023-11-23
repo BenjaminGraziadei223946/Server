@@ -109,7 +109,6 @@ async function answerCall(callId) {
   }
 }
 
-teamsCallAgent.on('incomingCall', incomingCallHandler);
 
 async function handleRealTimeMedia(callId) {
   // Code to handle real-time media streams
