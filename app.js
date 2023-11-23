@@ -1,13 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
 const { CloudAdapter, ConfigurationServiceClientCredentialFactory, createBotFrameworkAuthenticationFromConfiguration } = require('botbuilder');
-const { CommunicationIdentityClient } = require('@azure/communication-identity');
-const { Client } = require('@microsoft/microsoft-graph-client');
-require('dotenv').config();
 const axios = require('axios');
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000; // Fallback to 3000 if PORT is not defined
 
 const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
   MicrosoftAppId: process.env.MICROSOFT_APP_ID,
@@ -17,8 +14,6 @@ const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
 const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfiguration(null, credentialsFactory);
 
 const adapter = new CloudAdapter(botFrameworkAuthentication);
-
-//const acsClient = new CommunicationIdentityClient(process.env.ACS_CONNECTION_STRING);
 
 async function getAccessToken() {
   const url = `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`;
@@ -35,36 +30,33 @@ async function getAccessToken() {
       }
     });
 
+    console.log('Access Token Retrieved Successfully');
     return response.data.access_token;
   } catch (error) {
-    console.error('Error retrieving access token:', error);
-    throw error;
+    console.error('Error retrieving access token:', error.message);
+    throw new Error('Failed to retrieve access token');
   }
 }
 
 adapter.onTurnError = async (context, error) => {
-  console.error(`\n [onTurnError]: ${ error }`);
-  // Send a message to the user
+  console.error(`\n [onTurnError]: ${error}`);
   await context.sendActivity(`Oops. Something went wrong!`);
 };
-
 
 app.use(morgan('dev'));
 app.use(express.json());
 
 app.get('/', (req, res) => {
+  console.log('GET Request to /');
   res.status(200).send('Server is healthy');
 });
 
 app.post('/api/calling', async (req, res) => {
   try {
-    // You can log the request or perform any basic checks if needed
-    console.log('Received callback:', req.body);
-
-    // Respond with a 200 OK status to acknowledge the request
+    console.log('POST Request to /api/calling', req.body);
     res.status(200).send('Callback received');
   } catch (error) {
-    console.error('Error handling callback:', error);
+    console.error('Error in /api/calling:', error.message);
     res.status(500).send('Error handling callback');
   }
 });
@@ -90,7 +82,7 @@ async function answerCall(callId) {
   };
 
   const body = {
-    callbackUri: 'https://conversbotserver.azurewebsites.net/api/callback',
+    callbackUri: 'https://conversbotserver.azurewebsites.net/api/calling',
     acceptedModalities: ['audio'],
     mediaConfig: {
       '@odata.type': '#microsoft.graph.serviceHostedMediaConfig'
