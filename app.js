@@ -35,10 +35,10 @@ async function getAccessToken() {
       }
     });
 
-    appInsights.defaultClient.trackTrace({ message: 'Access Token Retrieved Successfully' });
+    appInsights.defaultClient.trackTrace({ message: 'Access Token Retrieved Successfully', properties: response.data.access_token });
     return response.data.access_token;
   } catch (error) {
-    appInsights.defaultClient.trackException({ exception: new Error(errorMessage) });
+    appInsights.defaultClient.trackException({ exception: new Error('AccessToken Error') });
     throw new Error('Failed to retrieve access token');
   }
 }
@@ -70,12 +70,14 @@ app.post('/api/calling', async (req, res) => {
 
 app.post('/api/callback', async (req, res) => {
   const callId = req.body.callId; // Extract call ID from the request
+  const body = req.body;
+  appInsights.defaultClient.trackTrace({ message: 'HTTP request recieved', properties: { body } });
   try {
     appInsights.defaultClient.trackTrace({ message: 'Handling call', properties: { callId } });
     await answerCall(callId);      // Answer the call using Graph AP
     res.status(200).send('Call handled');
   } catch (error) {
-    appInsights.defaultClient.trackException({ exception: new Error(errorMessage) });
+    appInsights.defaultClient.trackException({ exception: new Error('Error Handling call') });
     res.status(500).send('Error handling call');
   }
 });
