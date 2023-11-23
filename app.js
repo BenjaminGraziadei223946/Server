@@ -69,7 +69,7 @@ app.post('/api/calling', async (req, res) => {
 });
 
 app.post('/api/callback', async (req, res) => {
-  const callId = req.body.callId; // Extract call ID from the request
+  const callId = req.body.id; // Extract call ID from the request
   const body = req.body;
   appInsights.defaultClient.trackTrace({ message: 'HTTP request recieved', properties: { body } });
   try {
