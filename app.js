@@ -69,9 +69,9 @@ app.get('/', (req, res) => {
 
 app.post('/api/calling', async (req, res) => {
   try {
-    appInsights.defaultClient.trackTrace({ message: 'POST Request to /api/calling', properties: req.body });
     const audio = req.body.value[0].recourceData[0].mediaStreams[0]
     await playAudio(audio);
+    appInsights.defaultClient.trackTrace({ message: 'POST Request to /api/calling', properties: audio });
     res.status(200).send('Callback received');
   } catch (error) {
     errorMessage = 'Error in /api/calling: ${error.message}';
