@@ -1,8 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
+const speechSdk = require("microsoft-cognitiveservices-speech-sdk");
 const { CloudAdapter, ConfigurationServiceClientCredentialFactory, createBotFrameworkAuthenticationFromConfiguration } = require('botbuilder');
 const axios = require('axios');
 const appInsights = require("applicationinsights");
+const play = require('play-sound')(opts = {});
 
 appInsights.setup("8924c1d5-6c8d-4105-ba42-f881f6cfe838");
 appInsights.start();
@@ -49,6 +51,14 @@ adapter.onTurnError = async (context, error) => {
   await context.sendActivity(`Oops. Something went wrong!`);
 };
 
+function playAudio(audio) {
+  play.play(audio, function(err){
+    if (err) {
+      appInsights.defaultClient.trackException({ exception: new Error ('Audio error, ${audio}') });
+    }
+  });
+}
+
 app.use(morgan('dev'));
 app.use(express.json());
 
@@ -60,6 +70,8 @@ app.get('/', (req, res) => {
 app.post('/api/calling', async (req, res) => {
   try {
     appInsights.defaultClient.trackTrace({ message: 'POST Request to /api/calling', properties: req.body });
+    const audio = req.body.value[0].recourceData[0].mediaStreams[0]
+
     res.status(200).send('Callback received');
   } catch (error) {
     errorMessage = 'Error in /api/calling: ${error.message}';
@@ -70,8 +82,6 @@ app.post('/api/calling', async (req, res) => {
 
 app.post('/api/callback', async (req, res) => {
   const callId = req.body.value[0].resourceData.id; // Extract call ID from the request
-  const body = req.body;
-  appInsights.defaultClient.trackTrace({ message: 'HTTP request recieved', properties: { body } });
   try {
     appInsights.defaultClient.trackTrace({ message: 'Handling call', properties: { callId } });
     await answerCall(callId);      // Answer the call using Graph AP
@@ -111,8 +121,15 @@ async function answerCall(callId) {
 
 
 async function handleRealTimeMedia(callId) {
-  // Code to handle real-time media streams
-  // This involves using ACS to manage audio streams, like receiving and sending audio
+  const speechConfig = speechSdk.SpeechConfig.fromSubscription("<Your_Speech_Service_Key>", "<Your_Service_Region>");
+  const audioConfig = speechSdk.AudioConfig.fromStreamInput(audioStream);
+  
+  const recognizer = new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
+
+  recognizer.recognizeOnceAsync(result => {
+    console.log(`Recognized: ${result.text}`);
+    // Process the text as needed
+  });
 }
 
 
