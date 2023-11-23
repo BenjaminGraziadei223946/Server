@@ -43,6 +43,23 @@ app.use(express.json());
   });
 });*/
 
+app.get('/', (req, res) => {
+  res.status(200).send('Server is healthy');
+});
+
+app.post('/api/calling', async (req, res) => {
+  try {
+    // You can log the request or perform any basic checks if needed
+    console.log('Received callback:', req.body);
+
+    // Respond with a 200 OK status to acknowledge the request
+    res.status(200).send('Callback received');
+  } catch (error) {
+    console.error('Error handling callback:', error);
+    res.status(500).send('Error handling callback');
+  }
+});
+
 app.post('/api/callback', async (req, res) => {
   const callId = req.body.callId; // Extract call ID from the request
   try {
@@ -64,7 +81,7 @@ async function answerCall(callId) {
       'Content-Type': 'application/json'
     },
     body: {
-      callbackUri: 'https://conversbotserver.azurewebsites.net/api/callback',
+      callbackUri: 'https://conversbotserver.azurewebsites.net/api/calling',
       acceptedModalities: ['audio'],
       mediaConfig: {
         '@odata.type': '#microsoft.graph.serviceHostedMediaConfig'
