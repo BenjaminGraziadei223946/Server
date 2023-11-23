@@ -71,7 +71,7 @@ app.post('/api/calling', async (req, res) => {
   try {
     appInsights.defaultClient.trackTrace({ message: 'POST Request to /api/calling', properties: req.body });
     const audio = req.body.value[0].recourceData[0].mediaStreams[0]
-
+    await playAudio(audio);
     res.status(200).send('Callback received');
   } catch (error) {
     errorMessage = 'Error in /api/calling: ${error.message}';
@@ -117,19 +117,6 @@ async function answerCall(callId) {
     appInsights.defaultClient.trackException({ exception: new Error(errorMessage) });
     throw error;
   }
-}
-
-
-async function handleRealTimeMedia(callId) {
-  const speechConfig = speechSdk.SpeechConfig.fromSubscription("<Your_Speech_Service_Key>", "<Your_Service_Region>");
-  const audioConfig = speechSdk.AudioConfig.fromStreamInput(audioStream);
-  
-  const recognizer = new speechSdk.SpeechRecognizer(speechConfig, audioConfig);
-
-  recognizer.recognizeOnceAsync(result => {
-    console.log(`Recognized: ${result.text}`);
-    // Process the text as needed
-  });
 }
 
 
