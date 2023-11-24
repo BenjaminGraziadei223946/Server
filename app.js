@@ -84,6 +84,7 @@ app.post('/api/callback', async (req, res) => {
   try {
     const body = req.body
     appInsights.defaultClient.trackTrace({ message: 'Handling call', properties: { callId } });
+    appInsights.defaultClient.trackTrace({ message: 'Body', properties: { body } });
     await answerCall(callId);      // Answer the call using Graph AP
     res.status(200).send('Call handled');
   } catch (error) {
