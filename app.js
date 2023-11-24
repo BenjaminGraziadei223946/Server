@@ -3,14 +3,13 @@ const morgan = require('morgan');
 const { CloudAdapter, ConfigurationServiceClientCredentialFactory, createBotFrameworkAuthenticationFromConfiguration } = require('botbuilder');
 const axios = require('axios');
 const appInsights = require("applicationinsights");
-const play = require('play-sound')(opts = {});
 
 appInsights.setup("8924c1d5-6c8d-4105-ba42-f881f6cfe838");
 appInsights.start();
 
 
 const app = express();
-const port = process.env.PORT; // Fallback to 3000 if PORT is not defined
+const port = process.env.PORT;
 
 const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
   MicrosoftAppId: process.env.MICROSOFT_APP_ID,
@@ -20,6 +19,9 @@ const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
 const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfiguration(null, credentialsFactory);
 
 const adapter = new CloudAdapter(botFrameworkAuthentication);
+
+const callId = null;
+const accessToken = null;
 
 async function getAccessToken() {
   const url = `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`;
@@ -50,14 +52,6 @@ adapter.onTurnError = async (context, error) => {
   await context.sendActivity(`Oops. Something went wrong!`);
 };
 
-function playAudio(audio) {
-  play.play(audio, function(err){
-    if (err) {
-      appInsights.defaultClient.trackException({ exception: new Error ('Audio error, ${audio}') });
-    }
-  });
-}
-
 app.use(morgan('dev'));
 app.use(express.json());
 
@@ -68,9 +62,16 @@ app.get('/', (req, res) => {
 
 app.post('/api/calling', async (req, res) => {
   try {
-    const audio = req.body.value[0].recourceData[0].mediaStreams[0]
-    playAudio(audio);
-    appInsights.defaultClient.trackTrace({ message: 'POST Request to /api/calling', properties: audio });
+    const liveTranEndPoint = 'https://graph.microsoft.com/v1.0/communications/calls/${callId}/transcription';
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`
+    };
+
+    const livetran = await axios.get(graphApiEndpoint, { headers });
+
+    appInsights.defaultClient.trackTrace({ message: 'Live Transcript', properties: { livetran } });
     res.status(200).send('Callback received');
   } catch (error) {
     errorMessage = 'Error in /api/calling: ${error.message}';
@@ -80,7 +81,7 @@ app.post('/api/calling', async (req, res) => {
 });
 
 app.post('/api/callback', async (req, res) => {
-  const callId = req.body.value[0].resourceData.id; // Extract call ID from the request
+   callId = req.body.value[0].resourceData.id; // Extract call ID from the request
   try {
     appInsights.defaultClient.trackTrace({ message: 'Handling call', properties: { callId } });
     await answerCall(callId);      // Answer the call using Graph AP
@@ -92,7 +93,7 @@ app.post('/api/callback', async (req, res) => {
 });
 
 async function answerCall(callId) {
-  const accessToken = await getAccessToken();
+  accessToken = await getAccessToken();
   const graphApiEndpoint = `https://graph.microsoft.com/v1.0/communications/calls/${callId}/answer`;
 
   const headers = {
