@@ -64,4 +64,4 @@ jobs:
           app-name: 'ConversBotServer'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6EF01DFCAAFC48F587398A5B043D88B1 }}
-          package: .
+          package: node-app.zip
