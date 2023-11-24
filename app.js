@@ -62,7 +62,7 @@ app.get('/', (req, res) => {
 
 app.post('/api/calling', async (req, res) => {
   try {
-    const liveTranEndPoint = `https://graph.microsoft.com/v1.0/communications/calls/${callId}/transcription`;
+    const liveTranEndPoint = `https://graph.microsoft.com/beta/communications/calls/${callId}/transcription`;
 
     const headers = {
       'Authorization': `Bearer ${accessToken}`
