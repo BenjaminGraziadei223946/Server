@@ -20,8 +20,8 @@ const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfigura
 
 const adapter = new CloudAdapter(botFrameworkAuthentication);
 
-const callId = null;
-const accessToken = null;
+let callId = null;
+let accessToken = null;
 
 async function getAccessToken() {
   const url = `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`;
