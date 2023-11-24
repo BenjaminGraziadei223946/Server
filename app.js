@@ -62,18 +62,37 @@ app.get('/', (req, res) => {
 
 app.post('/api/calling', async (req, res) => {
   try {
-    const liveTranEndPoint = `https://graph.microsoft.com/beta/communications/calls/${callId}/transcription`;
+    // Assuming callId, userId, and meetingId are available and valid
+    const transcriptEndPoint = `https://graph.microsoft.com/beta/users/${userId}/onlineMeetings/${meetingId}/transcripts`;
 
     const headers = {
       'Authorization': `Bearer ${accessToken}`
     };
 
-    const livetran = await axios.get(liveTranEndPoint, { headers });
+    // Fetch the list of transcripts for the meeting
+    const transcriptListResponse = await axios.get(transcriptEndPoint, { headers });
+    const transcripts = transcriptListResponse.data.value;
+    appInsights.defaultClient.trackTrace({ message: 'Transcript List', properties: { transcriptListResponse } });
 
-    appInsights.defaultClient.trackTrace({ message: 'Live Transcript', properties: { livetran } });
-    res.status(200).send('Callback received');
+    // Optional: Choose the specific transcript if there are multiple
+    // This is a basic example; you might want to add more sophisticated selection logic
+    const transcriptId = transcripts.length > 0 ? transcripts[0].id : null;
+
+    if (transcriptId) {
+      // Fetch the content of the selected transcript
+      const transcriptContentEndpoint = `${transcriptEndPoint}/${transcriptId}/content`;
+      const transcriptContentResponse = await axios.get(transcriptContentEndpoint, { headers });
+      const transcriptContent = transcriptContentResponse.data;
+
+      // Log the transcript content
+      appInsights.defaultClient.trackTrace({ message: 'Transcript Content', properties: { transcriptContentResponse } });
+    } else {
+      throw new Error('No transcripts available for the specified meeting.');
+    }
+
+    res.status(200).send('Transcript fetched successfully');
   } catch (error) {
-    errorMessage = `Error in /api/calling: ${error.message}`;
+    const errorMessage = `Error in /api/calling: ${error.message}`;
     appInsights.defaultClient.trackException({ exception: new Error(errorMessage) });
     res.status(500).send('Error handling callback');
   }
