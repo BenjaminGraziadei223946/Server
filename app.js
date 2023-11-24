@@ -1,6 +1,5 @@
 const express = require('express');
 const morgan = require('morgan');
-const speechSdk = require("microsoft-cognitiveservices-speech-sdk");
 const { CloudAdapter, ConfigurationServiceClientCredentialFactory, createBotFrameworkAuthenticationFromConfiguration } = require('botbuilder');
 const axios = require('axios');
 const appInsights = require("applicationinsights");
@@ -11,7 +10,7 @@ appInsights.start();
 
 
 const app = express();
-const port = process.env.PORT || 3000; // Fallback to 3000 if PORT is not defined
+const port = process.env.PORT; // Fallback to 3000 if PORT is not defined
 
 const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
   MicrosoftAppId: process.env.MICROSOFT_APP_ID,
@@ -70,7 +69,7 @@ app.get('/', (req, res) => {
 app.post('/api/calling', async (req, res) => {
   try {
     const audio = req.body.value[0].recourceData[0].mediaStreams[0]
-    await playAudio(audio);
+    playAudio(audio);
     appInsights.defaultClient.trackTrace({ message: 'POST Request to /api/calling', properties: audio });
     res.status(200).send('Callback received');
   } catch (error) {
