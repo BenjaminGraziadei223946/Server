@@ -65,7 +65,6 @@ app.post('/api/calling', async (req, res) => {
     const liveTranEndPoint = 'https://graph.microsoft.com/v1.0/communications/calls/${callId}/transcription';
 
     const headers = {
-      'Content-Type': 'application/json',
       'Authorization': `Bearer ${accessToken}`
     };
 
