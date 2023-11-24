@@ -21,6 +21,7 @@ const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfigura
 const adapter = new CloudAdapter(botFrameworkAuthentication);
 
 let callId = null;
+let userId = null;
 let accessToken = null;
 
 async function getAccessToken() {
@@ -63,7 +64,7 @@ app.get('/', (req, res) => {
 app.post('/api/calling', async (req, res) => {
   try {
     // Assuming callId, userId, and meetingId are available and valid
-    const transcriptEndPoint = `https://graph.microsoft.com/beta/users/${userId}/onlineMeetings/${meetingId}/transcripts`;
+    const transcriptEndPoint = `https://graph.microsoft.com/beta/users/${user}/onlineMeetings/${meetingId}/transcripts`;
 
     const headers = {
       'Authorization': `Bearer ${accessToken}`
@@ -100,6 +101,7 @@ app.post('/api/calling', async (req, res) => {
 
 app.post('/api/callback', async (req, res) => {
    callId = req.body.value[0].resourceData.id; // Extract call ID from the request
+   userId = req.body.value[0].resourceData.source.identity.user.id; // Extract user ID from the request
   try {
     const body = req.body
     appInsights.defaultClient.trackTrace({ message: 'Handling call', properties: { callId } });
