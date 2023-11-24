@@ -62,7 +62,7 @@ app.get('/', (req, res) => {
 
 app.post('/api/calling', async (req, res) => {
   try {
-    const liveTranEndPoint = 'https://graph.microsoft.com/v1.0/communications/calls/${callId}/transcription';
+    const liveTranEndPoint = `https://graph.microsoft.com/v1.0/communications/calls/${callId}/transcription`;
 
     const headers = {
       'Authorization': `Bearer ${accessToken}`
@@ -73,7 +73,7 @@ app.post('/api/calling', async (req, res) => {
     appInsights.defaultClient.trackTrace({ message: 'Live Transcript', properties: { livetran } });
     res.status(200).send('Callback received');
   } catch (error) {
-    errorMessage = 'Error in /api/calling: ${error.message}';
+    errorMessage = `Error in /api/calling: ${error.message}`;
     appInsights.defaultClient.trackException({ exception: new Error(errorMessage) });
     res.status(500).send('Error handling callback');
   }
