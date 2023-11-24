@@ -38,7 +38,7 @@ async function getAccessToken() {
       }
     });
 
-    appInsights.defaultClient.trackTrace({ message: 'Access Token Retrieved Successfully', properties: response.data.access_token });
+    appInsights.defaultClient.trackTrace({ message: 'Access Token Retrieved Successfully'});
     return response.data.access_token;
   } catch (error) {
     appInsights.defaultClient.trackException({ exception: new Error('AccessToken Error') });
@@ -47,7 +47,7 @@ async function getAccessToken() {
 }
 
 adapter.onTurnError = async (context, error) => {
-  const errorMessage = '[onTurnError]: ${error}';
+  const errorMessage = `[onTurnError]: ${error}`;
   appInsights.defaultClient.trackException({ exception: new Error(errorMessage) });
   await context.sendActivity(`Oops. Something went wrong!`);
 };
@@ -82,6 +82,7 @@ app.post('/api/calling', async (req, res) => {
 app.post('/api/callback', async (req, res) => {
    callId = req.body.value[0].resourceData.id; // Extract call ID from the request
   try {
+    const body = req.body
     appInsights.defaultClient.trackTrace({ message: 'Handling call', properties: { callId } });
     await answerCall(callId);      // Answer the call using Graph AP
     res.status(200).send('Call handled');
@@ -93,6 +94,7 @@ app.post('/api/callback', async (req, res) => {
 
 async function answerCall(callId) {
   accessToken = await getAccessToken();
+  appInsights.defaultClient.trackTrace({ message: 'Access Token Retrieved Successfully', properties: { accessToken }});
   const graphApiEndpoint = `https://graph.microsoft.com/v1.0/communications/calls/${callId}/answer`;
 
   const headers = {
