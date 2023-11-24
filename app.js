@@ -69,7 +69,7 @@ app.post('/api/calling', async (req, res) => {
       'Authorization': `Bearer ${accessToken}`
     };
 
-    const livetran = await axios.get(graphApiEndpoint, { headers });
+    const livetran = await axios.get(liveTranEndPoint, { headers });
 
     appInsights.defaultClient.trackTrace({ message: 'Live Transcript', properties: { livetran } });
     res.status(200).send('Callback received');
