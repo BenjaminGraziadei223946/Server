@@ -64,7 +64,7 @@ app.get('/', (req, res) => {
 app.post('/api/calling', async (req, res) => {
   try {
     // Assuming callId, userId, and meetingId are available and valid
-    const transcriptEndPoint = `https://graph.microsoft.com/beta/users/${user}/onlineMeetings/${meetingId}/transcripts`;
+    const transcriptEndPoint = `https://graph.microsoft.com/beta/users/${userId}/onlineMeetings/${meetingId}/transcripts`;
 
     const headers = {
       'Authorization': `Bearer ${accessToken}`
